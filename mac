@@ -30,6 +30,7 @@ append_to_zshrc() {
   fi
 }
 
+
 # shellcheck disable=SC2154
 trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 
@@ -60,9 +61,9 @@ fi
 
 update_shell() {
   local shell_path;
-  shell_path="$(command -v zsh)"
+  shell_path="$(command -v fish)"
 
-  fancy_echo "Changing your shell to zsh ..."
+  fancy_echo "Changing your shell to fish ..."
   if ! grep "$shell_path" /etc/shells > /dev/null 2>&1 ; then
     fancy_echo "Adding '$shell_path' to /etc/shells"
     sudo sh -c "echo $shell_path >> /etc/shells"
@@ -70,16 +71,6 @@ update_shell() {
   sudo chsh -s "$shell_path" "$USER"
 }
 
-case "$SHELL" in
-  */zsh)
-    if [ "$(command -v zsh)" != '/usr/local/bin/zsh' ] ; then
-      update_shell
-    fi
-    ;;
-  *)
-    update_shell
-    ;;
-esac
 
 gem_install_or_update() {
   if gem list "$1" --installed > /dev/null; then
@@ -126,6 +117,7 @@ brew "tmux"
 brew "vim"
 brew "watchman"
 brew "zsh"
+brew "fish"
 
 # Heroku
 brew "heroku/brew/heroku"
@@ -146,16 +138,56 @@ cask "gpg-suite"
 # Databases
 brew "postgres", restart_service: :changed
 brew "redis", restart_service: :changed
+
+# Editor
+cask "visual-studio-code"
+cask "iterm2"
+
+# Misc
+cask "calibre"
+cask "google-backup-and-sync"
+cask "notion"
+cask "spotify"
+cask "telegram"
+
+mas "Things", id: 904280696
+mas "1Password", id: 1333542190
+mas "Spark Email", id: 1176895641
 EOF
 
+# Install OMF
+install_oh_my_fish() {
+  local tmp=$(mktemp)
+  curl -L https://get.oh-my.fish > ${tmp}
+  fish ${tmp} --noninteractive || :
+  
+}
+
+install_oh_my_fish
+echo "omf install bobthefish" | fish
+
+# update shell
+case "$SHELL" in
+  */fish)
+    if [ "$(command -v fish)" != '/usr/local/bin/fish' ] ; then
+      update_shell
+    fi
+    ;;
+  *)
+    update_shell
+    ;;
+esac
+
+#### 
 fancy_echo "Update heroku binary ..."
 brew unlink heroku
 brew link --force heroku
 
 fancy_echo "Configuring asdf version manager ..."
 if [ ! -d "$HOME/.asdf" ]; then
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.0
-  append_to_zshrc "source $HOME/.asdf/asdf.sh" 1
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.0  
+  echo 'source ~/.asdf/asdf.fish' >> ~/.config/fish/config.fish
+  mkdir -p ~/.config/fish/completions && cp ~/.asdf/completions/asdf.fish ~/.config/fish/completions
 fi
 
 alias install_asdf_plugin=add_or_update_asdf_plugin
@@ -174,6 +206,7 @@ add_or_update_asdf_plugin() {
 source "$HOME/.asdf/asdf.sh"
 add_or_update_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
 add_or_update_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
+add_or_update_asdf_plugin "rust" "https://github.com/code-lever/asdf-rust.git"
 
 install_asdf_language() {
   local language="$1"
@@ -196,8 +229,14 @@ fancy_echo "Installing latest Node ..."
 bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
 install_asdf_language "nodejs"
 
+fancy_echo "Installing latest Rust ..."
+install_asdf_language "rust"
+
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "Running your customizations from ~/.laptop.local ..."
   # shellcheck disable=SC1090
   . "$HOME/.laptop.local"
 fi
+
+fancy_echo "Installing VSCode Extensions"
+code --install-extension "Shan.code-settings-sync"
