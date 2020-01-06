@@ -133,6 +133,8 @@ brew "imagemagick"
 brew "libyaml" # should come after openssl
 brew "coreutils"
 brew "yarn"
+
+# Encryption
 brew "ykman"
 cask "gpg-suite"
 
