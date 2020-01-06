@@ -133,6 +133,7 @@ brew "imagemagick"
 brew "libyaml" # should come after openssl
 brew "coreutils"
 brew "yarn"
+brew "ykman"
 cask "gpg-suite"
 
 # Databases
@@ -149,6 +150,9 @@ cask "google-backup-and-sync"
 cask "notion"
 cask "spotify"
 cask "telegram"
+cask "slack"
+cask "bettertouchtool"
+cask "zoomus"
 
 mas "Things", id: 904280696
 mas "1Password", id: 1333542190
@@ -160,7 +164,7 @@ install_oh_my_fish() {
   local tmp=$(mktemp)
   curl -L https://get.oh-my.fish > ${tmp}
   fish ${tmp} --noninteractive || :
-  
+
 }
 
 install_oh_my_fish
@@ -178,14 +182,14 @@ case "$SHELL" in
     ;;
 esac
 
-#### 
+####
 fancy_echo "Update heroku binary ..."
 brew unlink heroku
 brew link --force heroku
 
 fancy_echo "Configuring asdf version manager ..."
 if [ ! -d "$HOME/.asdf" ]; then
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.0  
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.0
   echo 'source ~/.asdf/asdf.fish' >> ~/.config/fish/config.fish
   mkdir -p ~/.config/fish/completions && cp ~/.asdf/completions/asdf.fish ~/.config/fish/completions
 fi
