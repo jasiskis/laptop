@@ -118,10 +118,10 @@ brew "vim"
 brew "watchman"
 brew "zsh"
 brew "fish"
-
-# Heroku
-brew "heroku/brew/heroku"
-brew "parity"
+brew "coreutils"
+brew "gnu-sed"
+brew "sbt"
+brew "cmake"
 
 # GitHub
 brew "hub"
@@ -132,19 +132,33 @@ brew "imagemagick"
 # Programming language prerequisites and package managers
 brew "libyaml" # should come after openssl
 brew "coreutils"
-brew "yarn"
+cask "adoptopenjdk"
+brew "maven"
 
 # Encryption
 brew "ykman"
 cask "gpg-suite"
 
+# Misc brew
+brew "autojump"
+brew "fzf"
+brew "ripgrep"
+brew "fd"
+brew "bat"
+
+
 # Databases
 brew "postgres", restart_service: :changed
 brew "redis", restart_service: :changed
 
+# Could
+brew "awscli"
+cask "google-cloud-sdk"
+
 # Editor
 cask "visual-studio-code"
 cask "iterm2"
+cask "datagrip"
 
 # Misc
 cask "calibre"
@@ -155,6 +169,11 @@ cask "telegram"
 cask "slack"
 cask "bettertouchtool"
 cask "zoomus"
+cask "firefox"
+cask "docker"
+cask "kindle"
+cask "zotero"
+brew "circleci"
 
 mas "Things", id: 904280696
 mas "1Password", id: 1333542190
@@ -171,7 +190,7 @@ install_oh_my_fish() {
 
 install_oh_my_fish
 echo "omf install bobthefish" | fish
-
+echo "omf install https://github.com/jhillyerd/plugin-git" | fish
 # update shell
 case "$SHELL" in
   */fish)
@@ -183,11 +202,6 @@ case "$SHELL" in
     update_shell
     ;;
 esac
-
-####
-fancy_echo "Update heroku binary ..."
-brew unlink heroku
-brew link --force heroku
 
 fancy_echo "Configuring asdf version manager ..."
 if [ ! -d "$HOME/.asdf" ]; then
@@ -213,6 +227,8 @@ source "$HOME/.asdf/asdf.sh"
 add_or_update_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
 add_or_update_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
 add_or_update_asdf_plugin "rust" "https://github.com/code-lever/asdf-rust.git"
+add_or_update_asdf_plugin "python"
+add_or_update_asdf_plugin "scala"
 
 install_asdf_language() {
   local language="$1"
@@ -223,6 +239,10 @@ install_asdf_language() {
     asdf install "$language" "$version"
     asdf global "$language" "$version"
   fi
+}
+
+install_fzf() {
+  $(brew --prefix)/opt/fzf/install --all
 }
 
 fancy_echo "Installing latest Ruby ..."
@@ -238,11 +258,19 @@ install_asdf_language "nodejs"
 fancy_echo "Installing latest Rust ..."
 install_asdf_language "rust"
 
+fancy_echo "Installing latest python ..."
+install_asdf_language "python"
+pip install virtualfish
+echo "omf install virtualfish" | fish
+
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "Running your customizations from ~/.laptop.local ..."
   # shellcheck disable=SC1090
   . "$HOME/.laptop.local"
 fi
+
+fancy_echo "Install FZF"
+install_fzf
 
 fancy_echo "Installing VSCode Extensions"
 code --install-extension "Shan.code-settings-sync"
